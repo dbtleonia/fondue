@@ -16,7 +16,17 @@ def gen(total):
         t += 1
 
 def main():
-    data = list(gen(1000))
+    pills = 200
+    halves = [0] * pills * 2
+    totals = [0] * pills * 2
+    trials = 1000
+    for _ in range(trials):
+        for i, h, t in gen(pills):
+            halves[i] += h
+            totals[i] += t
+    for i in xrange(pills * 2):
+        halves[i] /= float(trials)
+        totals[i] /= float(trials)
 
     print """<html>
   <head>
@@ -28,14 +38,14 @@ def main():
         var areadata = google.visualization.arrayToDataTable([
           ['Time', 'Halves', 'Wholes'],"""
 
-    for t, half, total in data:
-        print "          ['%d', %d, %d]," % (t, half, total - half)
+    for t, (half, total) in enumerate(zip(halves, totals)):
+        print "          ['%d', %f, %f]," % (t, half, total - half)
 
     print """        ]);
         var linedata = google.visualization.arrayToDataTable([
           ['Time', '% Halves'],"""
 
-    for t, half, total in data:
+    for t, (half, total) in enumerate(zip(halves, totals)):
         print "          ['%d', %f]," % (t, float(half) / total)
 
     print """        ]);
