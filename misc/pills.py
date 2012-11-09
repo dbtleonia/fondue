@@ -74,7 +74,7 @@ def usage():
     sys.exit(1)
 
 def main():
-    if sys.argv < 1:
+    if len(sys.argv) < 2:
         usage()
     if sys.argv[1] == 'exact':
         if len(sys.argv) != 3:
