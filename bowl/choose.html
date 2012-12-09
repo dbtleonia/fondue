@@ -1,0 +1,71 @@
+<html>
+  <head>
+    <style>
+      * {
+        font: 12px sans-serif;
+      }
+      table {
+        border-collapse: collapse;
+      }
+      th {
+        text-align: left;
+      }
+      th, td {
+        border: 1px solid lightgray;
+        padding: 3px;
+      }
+      .selected {
+        background-color: #cceebb;
+      }
+    </style>
+    <script>
+      function clickTeam(me) {
+        // Toggle this team UI element & save team id
+        var teamId
+        if (me.className == "selected") {
+          me.className = "";
+          teamId = "";
+        } else {
+          me.className = "selected";
+          teamId = me.id;
+        }
+        // Unset the other team
+        var team1 = me.parentNode.getElementsByTagName("td")[0];
+        var team2 = me.parentNode.getElementsByTagName("td")[1];
+        if (me == team1) {
+          team2.className = "";
+        } else {
+          team1.className = "";
+        }
+        // Save to database
+        bowlId = me.parentNode.id
+        var xhr = new XMLHttpRequest();
+        document.getElementById("status").innerHTML = "Saving..."
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState == 4) {
+            // TODO: Rollback UI changes on failure.
+            document.getElementById("status").innerHTML = xhr.responseText;
+          }
+        }
+        xhr.open("GET", "/player/save?bowl=" + bowlId + "&team=" + teamId, true);
+        xhr.send();
+      }
+    </script>
+  </head>
+  <body>
+    <p><div id="status">Welcome {{ user.nickname() }} !</div></p>
+    <table>
+      {% for bowl in bowls %}
+      <tr id="{{ bowl[0] }}">
+	<th>{{ bowl[3] }}</th>
+	<td id="{{ bowl[1] }}" class="{{ 'selected' if choices.get(bowl[0]) == bowl[1] }}" onclick="clickTeam(this)" onmouseover="this.style.cursor='pointer'">
+	  {{ bowl[4] }}
+	</td>
+	<td id="{{ bowl[2] }}" class="{{ 'selected' if choices.get(bowl[0]) == bowl[2] }}" onclick="clickTeam(this)" onmouseover="this.style.cursor='pointer'">
+	  {{ bowl[5] }}
+	</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </body>
+</html>
