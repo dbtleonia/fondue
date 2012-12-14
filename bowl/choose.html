@@ -47,7 +47,7 @@
             document.getElementById("status").innerHTML = xhr.responseText;
           }
         }
-        xhr.open("GET", "/player/save?bowl=" + bowlId + "&team=" + teamId, true);
+        xhr.open("GET", "/player/save?bowl=" + escape(bowlId) + "&team=" + escape(teamId), true);
         xhr.send();
       }
     </script>
