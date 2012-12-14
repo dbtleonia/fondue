@@ -135,5 +135,6 @@ class Scoreboard(webapp2.RequestHandler):
 app = webapp2.WSGIApplication([('/', MainPage),
                                ('/player/choose', Choose),
                                ('/player/save', Save),
-                               ('/public/scoreboard', Scoreboard)],
+#                               ('/public/scoreboard', Scoreboard)],
+                               ],
                               debug=True)
