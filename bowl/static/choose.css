@@ -1,0 +1,13 @@
+* {
+    font: 12px sans-serif;
+}
+table {
+    border-collapse: collapse;
+}
+td {
+    border: 1px solid lightgray;
+    padding: 3px;
+}
+.selected {
+    background-color: #cceebb;
+}
