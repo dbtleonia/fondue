@@ -124,6 +124,18 @@ class Save(webapp2.RequestHandler):
                                        'Choice', bowl))
         self.response.out.write('Saved')
 
+def completed_bowls():
+    # TODO: Represent bowls using a dict/class instead of a tuple.
+    completed = set()
+    utc_now = datetime.datetime.utcnow()
+    for d, b, _, _, _, _, _ in BOWLS:
+        # UTC is 5 hours ahead of EST
+        utc_kickoff = (datetime.datetime.strptime(d, '%Y %b %d %I:%M %p')
+                       + datetime.timedelta(hours=5))
+        if utc_kickoff < utc_now:
+            completed.add(b)
+    return completed
+
 class Scoreboard(webapp2.RequestHandler):
     def get(self):
         next_cursor = self.request.get('next')
@@ -134,22 +146,13 @@ class Scoreboard(webapp2.RequestHandler):
         if next_cursor:
             player_query.with_cursor(next_cursor)
 
-        # TODO: Represent bowls using a dict/class instead of a tuple.
-        completed_bowls = set()
-        utc_now = datetime.datetime.utcnow()
-        for d, b, _, _, _, _, _ in BOWLS:
-            # UTC is 5 hours ahead of EST
-            utc_kickoff = (datetime.datetime.strptime(d, '%Y %b %d %I:%M %p')
-                           + datetime.timedelta(hours=5))
-            if utc_kickoff < utc_now:
-                completed_bowls.add(b)
-
+        completed = completed_bowls()
         players = []
         for player in player_query.run():
             choice_query = Choice.all()
             choice_query.ancestor(player)
             choices = dict((c.bowl, c.team) for c in choice_query.run()
-                           if c.bowl in completed_bowls)
+                           if c.bowl in completed)
             players.append((player, choices))
         next_cursor = player_query.cursor()
         tmpl = jinja_environment.get_template('scoreboard.html')
