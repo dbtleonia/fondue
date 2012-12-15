@@ -133,11 +133,23 @@ class Scoreboard(webapp2.RequestHandler):
         # TODO: Catch bad cursor here?
         if next_cursor:
             player_query.with_cursor(next_cursor)
+
+        # TODO: Represent bowls using a dict/class instead of a tuple.
+        completed_bowls = set()
+        utc_now = datetime.datetime.utcnow()
+        for d, b, _, _, _, _, _ in BOWLS:
+            # UTC is 5 hours ahead of EST
+            utc_kickoff = (datetime.datetime.strptime(d, '%Y %b %d %I:%M %p')
+                           + datetime.timedelta(hours=5))
+            if utc_kickoff < utc_now:
+                completed_bowls.add(b)
+
         players = []
         for player in player_query.run():
             choice_query = Choice.all()
             choice_query.ancestor(player)
-            choices = dict((c.bowl, c.team) for c in choice_query.run())
+            choices = dict((c.bowl, c.team) for c in choice_query.run()
+                           if c.bowl in completed_bowls)
             players.append((player, choices))
         next_cursor = player_query.cursor()
         tmpl = jinja_environment.get_template('scoreboard.html')
@@ -147,6 +159,5 @@ class Scoreboard(webapp2.RequestHandler):
 app = webapp2.WSGIApplication([('/', MainPage),
                                ('/player/choose', Choose),
                                ('/player/save', Save),
-#                               ('/public/scoreboard', Scoreboard)],
-                               ],
+                               ('/public/scoreboard', Scoreboard)],
                               debug=True)

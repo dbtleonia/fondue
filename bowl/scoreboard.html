@@ -8,14 +8,14 @@
       <tr>
         <th></th>
 	{% for bowl in bowls %}
-        <th title="{{ bowl[3] }}">{{ bowl[0] }}</th>
+        <th title="{{ bowl[4] }}">{{ bowl[1] }}</th>
 	{% endfor %}
       </tr>
       {% for p in players %}
       <tr>
 	<th>{{ p[0].user.nickname() }}</th>
 	{% for bowl in bowls %}
-        <td>{{ p[1].get(bowl[0], '') }}</td>
+        <td>{{ p[1].get(bowl[1], '') }}</td>
 	{% endfor %}
       </tr>
       {% endfor %}	
