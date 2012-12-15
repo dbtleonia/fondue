@@ -1,7 +1,8 @@
 // TODO: Don't use hard-coded literals as indices.
 function clickTeam(me) {
     // Toggle this team UI element & save team id
-    var teamId
+    var teamId;
+    var prevMyClass = me.className;
     if (me.className == "selected") {
         me.className = "";
         teamId = "";
@@ -12,22 +13,28 @@ function clickTeam(me) {
     // Unset the other team
     var team1 = me.parentNode.getElementsByTagName("td")[2];
     var team2 = me.parentNode.getElementsByTagName("td")[3];
+    var otherTeam;
     if (me == team1) {
-        team2.className = "";
+        otherTeam = team2;
     } else {
-        team1.className = "";
+        otherTeam = team1;
     }
+    var prevOtherClass = otherTeam.className;
+    otherTeam.className = "";
     // Save to database
-    bowlId = me.parentNode.id
+    var bowlId = me.parentNode.id;
     var xhr = new XMLHttpRequest();
-    document.getElementById("status").innerHTML = "Saving..."
+    document.getElementById("status").innerHTML = "Saving...";
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
-            // TODO: Rollback UI changes on failure.
             document.getElementById("status").innerHTML = xhr.responseText;
+            if (xhr.responseText != "Saved") {
+                me.className = prevMyClass;
+                otherTeam.className = prevOtherClass;
+            }
         }
     }
     xhr.open("POST", "/player/save", true);
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhr.send("bowl=" + escape(bowlId) + "&team=" + escape(teamId))
+    xhr.send("bowl=" + escape(bowlId) + "&team=" + escape(teamId));
 }
