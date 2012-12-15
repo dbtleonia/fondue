@@ -7,10 +7,7 @@
       table {
         border-collapse: collapse;
       }
-      th {
-        text-align: left;
-      }
-      th, td {
+      td {
         border: 1px solid lightgray;
         padding: 3px;
       }
@@ -31,8 +28,8 @@
           teamId = me.id;
         }
         // Unset the other team
-        var team1 = me.parentNode.getElementsByTagName("td")[0];
-        var team2 = me.parentNode.getElementsByTagName("td")[1];
+        var team1 = me.parentNode.getElementsByTagName("td")[2];
+        var team2 = me.parentNode.getElementsByTagName("td")[3];
         if (me == team1) {
           team2.className = "";
         } else {
@@ -58,13 +55,14 @@
     <p><div id="status">Welcome {{ user.nickname() }} !</div></p>
     <table>
       {% for bowl in bowls %}
-      <tr id="{{ bowl[0] }}">
-	<th>{{ bowl[3] }}</th>
-	<td id="{{ bowl[1] }}" class="{{ 'selected' if choices.get(bowl[0]) == bowl[1] }}" onclick="clickTeam(this)" onmouseover="this.style.cursor='pointer'">
-	  {{ bowl[4] }}
-	</td>
-	<td id="{{ bowl[2] }}" class="{{ 'selected' if choices.get(bowl[0]) == bowl[2] }}" onclick="clickTeam(this)" onmouseover="this.style.cursor='pointer'">
+      <tr id="{{ bowl[1] }}">
+	<td>{{ bowl[0][5:] }}</td>
+	<td>{{ bowl[4] }}</td>
+	<td id="{{ bowl[2] }}" class="{{ 'selected' if choices.get(bowl[1]) == bowl[2] }}" onclick="clickTeam(this)" onmouseover="this.style.cursor='pointer'">
 	  {{ bowl[5] }}
+	</td>
+	<td id="{{ bowl[3] }}" class="{{ 'selected' if choices.get(bowl[1]) == bowl[3] }}" onclick="clickTeam(this)" onmouseover="this.style.cursor='pointer'">
+	  {{ bowl[6] }}
 	</td>
       </tr>
       {% endfor %}

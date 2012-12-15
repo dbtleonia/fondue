@@ -15,42 +15,43 @@ from google.appengine.ext import db
 jinja_environment = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 
+# NB: All times Eastern.
 BOWLS = [
-    ('NM', 'NEV',  'ARIZ', 'New Mexico', 'Nevada', 'Arizona'),
-    ('IP', 'TOL',  'USU',  'Idaho Potato', 'Toledo', 'Utah St'),
-    ('PA', 'BYU',  'SDSU', 'Poinsettia', 'BYU', 'SDSU'),
-    ('BB', 'UCF',  'BALL', "Beef 'O' Brady's", 'C Florida', 'Ball St'),
-    ('NO', 'ECU',  'ULL',  'New Orleans', 'E Carolina', 'La Lafayette'),
-    ('MA', 'WASH', 'BSU',  'Maaco', 'Washington', 'Boise St'),
-    ('HI', 'FRES', 'SMU',  "Hawai'i", 'Fresno St', 'SMU'),
-    ('LC', 'WKU',  'CMU',  'Little Caesars Pizza', 'W Kentucky', 'C Michigan'),
-    ('MI', 'SJSU', 'BGSU', 'Military', 'San Jose St', 'BGU'),
-    ('BK', 'CIN',  'DUKE', 'Belk', 'Cincy', 'Duke'),
-    ('HO', 'BAY',  'UCLA', 'Holiday', 'Baylor', 'UCLA'),
-    ('IN', 'OHIO', 'ULM',  'Independence', 'Ohio', 'UL-Monroe'),
-    ('RA', 'RUTG', 'VT',   'Russell Athletic', 'Rutgers', 'Virginia Tech'),
-    ('ME', 'MINN', 'TTU',  'Meneike Car Care', 'Minnesota', 'Texas Tech'),
-    ('AF', 'RICE', 'AFA',  'Armed Forces', 'Rice', 'Air Force'),
-    ('PS', 'WVU',  'SYR',  'Pinstripe', 'W Virginia', 'Syracuse'),
-    ('FH', 'NAVY', 'ASU',  'Fight Hunger', 'Navy', 'Arizona St'),
-    ('AL', 'TEX',  'ORST', 'Alamo', 'Texas', 'Oregon St'),
-    ('BW', 'TCU',  'MSU',  'Buffalo Wild Wings', 'TCU', 'Mich St'),
-    ('MU', 'NCST', 'VAN',  'Music City', 'NC State', 'Vanderbilt'),
-    ('SN', 'USC',  'GT',   'Sun', 'USC', 'Ga Tech'),
-    ('LY', 'ISU',  'TLSA', 'Liberty', 'Iowa St', 'Tulsa'),
-    ('CK', 'LSU',  'CLEM', 'Chick-fil-A', 'LSU', 'Clemson'),
-    ('GA', 'MSST', 'NW',   'Gator', 'Miss St', "N'western"),
-    ('HD', 'PUR',  'OKST', 'Heart of Dallas', 'Purdue', 'Oklahoma St'),
-    ('OU', 'SCAR', 'MICH', 'Outback', 'S Carolina', 'Michigan'),
-    ('C1', 'UGA',  'NEB',  'Capital One', 'Georgia', 'Nebraska'),
-    ('RO', 'WIS',  'STAN', 'Rose', 'Wisconsin', 'Stanford'),
-    ('OR', 'NIU',  'FSU',  'Orange', 'N Illinois', 'Florida St'),
-    ('SG', 'LOU',  'FLA',  'Sugar', 'Louisville', 'Florida'),
-    ('FA', 'ORE',  'KSU',  'Fiesta', 'Oregon', 'Kansas St'),
-    ('CN', 'TA&M', 'OKLA', 'Cotton', 'Texas A&M', 'Oklahoma'),
-    ('CS', 'PITT', 'MISS', 'Compass', 'Pittsburgh', 'Ole Miss'),
-    ('GO', 'KENT', 'ARST', 'GoDaddy.com', 'Kent St', 'Arkansas St'),
-    ('NC', 'ALA',  'ND',   'BCS National Championship', 'Alabama', 'N Dame'),
+    ('2012 Dec 15  1:00 pm', 'NM', 'NEV',  'ARIZ', 'New Mexico', 'Nevada', 'Arizona'),
+    ('2012 Dec 15  4:30 pm', 'IP', 'TOL',  'USU',  'Idaho Potato', 'Toledo', 'Utah St'),
+    ('2012 Dec 20  8:00 pm', 'PA', 'BYU',  'SDSU', 'Poinsettia', 'BYU', 'SDSU'),
+    ('2012 Dec 21  7:30 pm', 'BB', 'UCF',  'BALL', "Beef 'O' Brady's", 'C Florida', 'Ball St'),
+    ('2012 Dec 22 12:00 pm', 'NO', 'ECU',  'ULL',  'New Orleans', 'E Carolina', 'La Lafayette'),
+    ('2012 Dec 22  3:30 pm', 'MA', 'WASH', 'BSU',  'Maaco', 'Washington', 'Boise St'),
+    ('2012 Dec 24  8:00 pm', 'HI', 'FRES', 'SMU',  "Hawai'i", 'Fresno St', 'SMU'),
+    ('2012 Dec 26  7:30 pm', 'LC', 'WKU',  'CMU',  'Little Caesars Pizza', 'W Kentucky', 'C Michigan'),
+    ('2012 Dec 27  3:00 pm', 'MI', 'SJSU', 'BGSU', 'Military', 'San Jose St', 'BGU'),
+    ('2012 Dec 27  6:30 pm', 'BK', 'CIN',  'DUKE', 'Belk', 'Cincy', 'Duke'),
+    ('2012 Dec 27  9:45 pm', 'HO', 'BAY',  'UCLA', 'Holiday', 'Baylor', 'UCLA'),
+    ('2012 Dec 28  2:00 pm', 'IN', 'OHIO', 'ULM',  'Independence', 'Ohio', 'UL-Monroe'),
+    ('2012 Dec 28  5:30 pm', 'RA', 'RUTG', 'VT',   'Russell Athletic', 'Rutgers', 'Virginia Tech'),
+    ('2012 Dec 28  9:00 pm', 'ME', 'MINN', 'TTU',  'Meneike Car Care', 'Minnesota', 'Texas Tech'),
+    ('2012 Dec 29 11:45 am', 'AF', 'RICE', 'AFA',  'Armed Forces', 'Rice', 'Air Force'),
+    ('2012 Dec 29  3:15 pm', 'PS', 'WVU',  'SYR',  'Pinstripe', 'W Virginia', 'Syracuse'),
+    ('2012 Dec 29  4:00 pm', 'FH', 'NAVY', 'ASU',  'Fight Hunger', 'Navy', 'Arizona St'),
+    ('2012 Dec 29  6:45 pm', 'AL', 'TEX',  'ORST', 'Alamo', 'Texas', 'Oregon St'),
+    ('2012 Dec 29 10:15 pm', 'BW', 'TCU',  'MSU',  'Buffalo Wild Wings', 'TCU', 'Mich St'),
+    ('2012 Dec 31 12:00 pm', 'MU', 'NCST', 'VAN',  'Music City', 'NC State', 'Vanderbilt'),
+    ('2012 Dec 31  2:00 pm', 'SN', 'USC',  'GT',   'Sun', 'USC', 'Ga Tech'),
+    ('2012 Dec 31  3:30 pm', 'LY', 'ISU',  'TLSA', 'Liberty', 'Iowa St', 'Tulsa'),
+    ('2012 Dec 31  7:30 pm', 'CK', 'LSU',  'CLEM', 'Chick-fil-A', 'LSU', 'Clemson'),
+    ('2013 Jan  1 12:00 pm', 'GA', 'MSST', 'NW',   'Gator', 'Miss St', "N'western"),
+    ('2013 Jan  1 12:00 pm', 'HD', 'PUR',  'OKST', 'Heart of Dallas', 'Purdue', 'Oklahoma St'),
+    ('2013 Jan  1  1:00 pm', 'OU', 'SCAR', 'MICH', 'Outback', 'S Carolina', 'Michigan'),
+    ('2013 Jan  1  1:00 pm', 'C1', 'UGA',  'NEB',  'Capital One', 'Georgia', 'Nebraska'),
+    ('2013 Jan  1  5:00 pm', 'RO', 'WIS',  'STAN', 'Rose', 'Wisconsin', 'Stanford'),
+    ('2013 Jan  1  8:30 pm', 'OR', 'NIU',  'FSU',  'Orange', 'N Illinois', 'Florida St'),
+    ('2013 Jan  2  8:30 pm', 'SG', 'LOU',  'FLA',  'Sugar', 'Louisville', 'Florida'),
+    ('2013 Jan  3  8:30 pm', 'FA', 'ORE',  'KSU',  'Fiesta', 'Oregon', 'Kansas St'),
+    ('2013 Jan  4  8:00 pm', 'CN', 'TA&M', 'OKLA', 'Cotton', 'Texas A&M', 'Oklahoma'),
+    ('2013 Jan  5  1:00 pm', 'CS', 'PITT', 'MISS', 'Compass', 'Pittsburgh', 'Ole Miss'),
+    ('2013 Jan  6  9:00 pm', 'GO', 'KENT', 'ARST', 'GoDaddy.com', 'Kent St', 'Arkansas St'),
+    ('2013 Jan  7  8:30 pm', 'NC', 'ALA',  'ND',   'BCS National Championship', 'Alabama', 'N Dame'),
     ]
 
 class Player(db.Model):
@@ -96,12 +97,18 @@ class Save(webapp2.RequestHandler):
         team = self.request.get('team')
 
         # Verify inputs
-        for b, t1, t2, _, _, _ in BOWLS:
+        for d, b, t1, t2, _, _, _ in BOWLS:
             if bowl == b:
                 if team and team not in [t1, t2]:
                     self.response.out.write(
                         'Invalid team for bowl %s: %s' %
                         (cgi.escape(bowl), cgi.escape(team)))
+                    return
+                # UTC is 5 hours ahead of EST
+                utc_kickoff = (datetime.datetime.strptime(d, '%Y %b %d %I:%M %p')
+                               + datetime.timedelta(hours=5))
+                if datetime.datetime.utcnow() > utc_kickoff:
+                    self.response.out.write('Game already started!')
                     return
                 break
         else:
