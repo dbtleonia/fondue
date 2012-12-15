@@ -1,10 +1,13 @@
+# TODO: Write comments.
+
 import cgi
 import datetime
-import jinja2
 import os
 import time
 import urllib
 import webapp2
+
+import jinja2  # configured in app.yaml
 
 from google.appengine.api import users
 from google.appengine.ext import db
@@ -51,9 +54,11 @@ BOWLS = [
     ]
 
 class Player(db.Model):
+    """Represents a user who is guessing bowl results."""
     user = db.UserProperty(required=True)
 
 class Choice(db.Model):
+    """The team chosen to win a given bowl.  Each Choice has a Player parent."""
     bowl = db.StringProperty(required=True)
     team = db.StringProperty(required=True)
 
@@ -81,7 +86,7 @@ class Choose(webapp2.RequestHandler):
                 bowls=BOWLS, choices=choices, user=user))
 
 class Save(webapp2.RequestHandler):
-    def get(self):
+    def post(self):
         self.response.headers['Content-Type'] = 'text/plain'
         user = users.get_current_user()
         if not user:
