@@ -1,5 +1,5 @@
 // TODO: Don't use hard-coded literals as indices.
-function clickTeam(me) {
+function clickTeam(me, savePath) {
     // Toggle this team UI element & save team id
     var teamId;
     var prevMyClass = me.className;
@@ -34,7 +34,7 @@ function clickTeam(me) {
             }
         }
     }
-    xhr.open("POST", "/player/save", true);
+    xhr.open("POST", savePath, true);
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhr.send("bowl=" + escape(bowlId) + "&team=" + escape(teamId));
 }

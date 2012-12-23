@@ -8,6 +8,10 @@ handlers:
 - url: /
   script: bowl.app
 
+- url: /admin/.*
+  script: bowl.app
+  login: admin
+
 - url: /player/.*
   script: bowl.app
   login: required

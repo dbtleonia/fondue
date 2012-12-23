@@ -1,19 +1,32 @@
+<!--
+Variables set for this template:
+  greeting:  Text to display as startup status
+  bowls:     List of bowls; see bowl.py for format
+  choices:   Dict of bowl_id -> team_id
+  save_path: /player/save or /admin/save
+-->
 <html>
   <head>
     <link type="text/css" rel="stylesheet" href="/static/choose.css" />
     <script src="/static/choose.js"></script>
   </head>
   <body>
-    <p><div id="status">Welcome {{ user.nickname() }} !</div></p>
+    <p><div id="status">{{ greeting }}</div></p>
     <table>
       {% for bowl in bowls %}
       <tr id="{{ bowl[1] }}">
         <td>{{ bowl[0][5:] }}</td>
         <td>{{ bowl[4] }}</td>
-        <td id="{{ bowl[2] }}" class="{{ 'selected' if choices.get(bowl[1]) == bowl[2] }}" onclick="clickTeam(this)" onmouseover="this.style.cursor='pointer'">
+        <td id="{{ bowl[2] }}"
+            class="{{ 'selected' if choices.get(bowl[1]) == bowl[2] }}"
+            onclick="clickTeam(this, '{{ save_path }}')"
+            onmouseover="this.style.cursor='pointer'">
           {{ bowl[5] }}
         </td>
-        <td id="{{ bowl[3] }}" class="{{ 'selected' if choices.get(bowl[1]) == bowl[3] }}" onclick="clickTeam(this)" onmouseover="this.style.cursor='pointer'">
+        <td id="{{ bowl[3] }}"
+            class="{{ 'selected' if choices.get(bowl[1]) == bowl[3] }}"
+            onclick="clickTeam(this, '{{ save_path }}')"
+            onmouseover="this.style.cursor='pointer'">
          {{ bowl[6] }}
         </td>
       </tr>

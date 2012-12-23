@@ -1,3 +1,10 @@
+<!--
+Variables set for this template:
+  bowls:   List of bowls; see bowl.py for format
+  players: List of (Player, {'bowl_id': 'team_id'}) for started bowl choices
+  next:    Cursor for next players to display
+  winners: Dict of finished bowl outcomes {'bowl_id': 'team_id'}
+-->
 <html>
   <head>
     <link type="text/css" rel="stylesheet" href="/static/scoreboard.css" />
@@ -15,7 +22,7 @@
       <tr>
 	<th>{{ p[0].user.nickname() }}</th>
 	{% for bowl in bowls %}
-        <td>{{ p[1].get(bowl[1], '') }}</td>
+        <td class="{{ ('right' if p[1][bowl[1]] == winners[bowl[1]] else 'wrong') if bowl[1] in p[1] and bowl[1] in winners }}">{{ p[1].get(bowl[1], '') }}</td>
 	{% endfor %}
       </tr>
       {% endfor %}	

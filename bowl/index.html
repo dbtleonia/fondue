@@ -1,8 +1,18 @@
+<!--
+Variables set for this template:
+  is_admin: True if user is logged in and is an admin
+  logout:   URL for logout if user is logged in
+-->
 <html>
   <body>
     <h1>Bowl Challenge 2012-2013</h1>
     <a href="/public/scoreboard">Scoreboard</a><br>
     <a href="/player/choose">Choose</a><br>
+
+    {% if is_admin %}
+    <a href="/admin/choose">Admin</a><br>
+    {% endif %}
+
     {% if logout %}
     <a href="{{ logout }}">Logout</a><br>
     {% endif %}

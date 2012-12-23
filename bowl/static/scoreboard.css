@@ -11,3 +11,9 @@ th, td {
     border: 1px solid lightgray;
     padding: 2px;
 }
+.right {
+    background-color: #ddffcc;
+}
+.wrong {
+    background-color: #ffccdd;
+}

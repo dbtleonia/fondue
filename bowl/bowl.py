@@ -1,4 +1,36 @@
-# TODO: Write comments.
+# This web app runs a contest for college football bowl games.
+#
+# Each bowl game has a name and two teams.  We associate unique
+# 2-letter id's to each game, and 2-4 letter id's to each team.  For
+# example:
+#
+#   New Mexico Bowl (NM) -- Nevada (NEV) vs Arizona (ARIZ)
+#   Russell Athletic Bowl (RA) -- Rutgers (RUTG) vs Virginia Tech (VT)
+#
+# Each user can vote for which team will win each bowl.  These choices
+# are stored hierarchically like so:
+#
+#   Player('alice')
+#     Choice(bowl='NM', team='NEV')
+#     Choice(bowl='RA', team='RUTG')
+#   Player('bob')
+#     Choice(bowl='NM', team='NEV')
+#     Choice(bowl='RA', team='VT') 
+#
+# The actual game outcomes can be set by the admin user, and these are
+# stored under a singleton object:
+#
+#   Winners('singleton')
+#     Choice(bowl='NM', team='ARIZ')
+#     Choice(bowl='RA', team='VT')
+#
+# The users make their selections at /player/choose, which then posts
+# to /player/save when the user clicks a team.
+#
+# Similarly, game outcomes go through /admin/choose and /admin/save.
+#
+# In addition, there is an overall summary at /public/scoreboard,
+# viewable by anyone (including non-logged-in visitors).
 
 import cgi
 import datetime
@@ -54,45 +86,62 @@ BOWLS = [
     ('2013 Jan  7  8:30 pm', 'NC', 'ND',   'ALA',  'BCS National Championship', 'Notre Dame', 'Alabama'),
     ]
 
+class Winners(db.Model):
+    """Parent entity for Choice entities representing bowl outcomes.
+    NB: We only create one such entity, and its key name is 'singleton'"""
+
 class Player(db.Model):
     """Represents a user who is guessing bowl results."""
     user = db.UserProperty(required=True)
 
 class Choice(db.Model):
-    """The team chosen to win a given bowl.  Each Choice has a Player parent."""
+    """The team chosen to win a given bowl.
+    Each Choice has a Player parent, or has the Winners singleton as parent."""
     bowl = db.StringProperty(required=True)
     team = db.StringProperty(required=True)
 
 class MainPage(webapp2.RequestHandler):
     def get(self):
         logout = None
+        is_admin = False
         user = users.get_current_user()
         if user:
             logout = users.create_logout_url('/')
+            if users.is_current_user_admin():
+                is_admin = True
         tmpl = jinja_environment.get_template('index.html')
-        self.response.out.write(tmpl.render(logout=logout))
+        self.response.out.write(tmpl.render(is_admin=is_admin, logout=logout))
 
 class Choose(webapp2.RequestHandler):
+    def choose(self, parent, greeting, save_path):
+        choice_query = Choice.all()
+        choice_query.ancestor(parent)
+        choices = dict((c.bowl, c.team) for c in choice_query.run())
+        tmpl = jinja_environment.get_template('choose.html')
+        self.response.out.write(tmpl.render(
+                greeting=greeting, bowls=BOWLS, choices=choices,
+                save_path=save_path))
+
+class PlayerChoose(Choose):
     def get(self):
         user = users.get_current_user()
         if not user:
             self.response.out.write('<html><body>Login required</body></html>')
             return
-        player = Player.get_or_insert(user.user_id(), user=user)
-        choice_query = Choice.all()
-        choice_query.ancestor(player)
-        choices = dict((c.bowl, c.team) for c in choice_query.run())
-        tmpl = jinja_environment.get_template('choose.html')
-        self.response.out.write(tmpl.render(
-                bowls=BOWLS, choices=choices, user=user))
+        parent = Player.get_or_insert(user.user_id(), user=user)
+        self.choose(parent=parent,
+                    greeting='Welcome %s !' % user.nickname(),
+                    save_path='/player/save')
+
+class AdminChoose(Choose):
+    def get(self):
+        parent = Winners.get_or_insert('singleton')
+        self.choose(parent=parent,
+                    greeting='ADMIN PAGE: Select winners',
+                    save_path='/admin/save')
 
 class Save(webapp2.RequestHandler):
-    def post(self):
-        self.response.headers['Content-Type'] = 'text/plain'
-        user = users.get_current_user()
-        if not user:
-            self.response.out.write('Login required')
-            return
+    def save(self, user):
         bowl = self.request.get('bowl')
         team = self.request.get('team')
 
@@ -104,12 +153,14 @@ class Save(webapp2.RequestHandler):
                         'Invalid team for bowl %s: %s' %
                         (cgi.escape(bowl), cgi.escape(team)))
                     return
-                # UTC is 5 hours ahead of EST
-                utc_kickoff = (datetime.datetime.strptime(d, '%Y %b %d %I:%M %p')
-                               + datetime.timedelta(hours=5))
-                if datetime.datetime.utcnow() > utc_kickoff:
-                    self.response.out.write('Game already started!')
-                    return
+                if user is not None:
+                    # UTC is 5 hours ahead of EST
+                    utc_kickoff = (
+                        datetime.datetime.strptime(d, '%Y %b %d %I:%M %p') +
+                        datetime.timedelta(hours=5))
+                    if datetime.datetime.utcnow() > utc_kickoff:
+                        self.response.out.write('Game already started!')
+                        return
                 break
         else:
             self.response.out.write('Invalid bowl: %s' % cgi.escape(bowl))
@@ -117,27 +168,54 @@ class Save(webapp2.RequestHandler):
 
         # Store or delete a choice
         if team:
-            player = Player.get_or_insert(user.user_id(), user=user)
-            Choice(parent=player, key_name=bowl, bowl=bowl, team=team).put()
+            if user is None:
+                parent = Winners.get_or_insert('singleton')
+            else:
+                parent = Player.get_or_insert(user.user_id(), user=user)
+            Choice(parent=parent, key_name=bowl, bowl=bowl, team=team).put()
         else:
-            db.delete(db.Key.from_path('Player', user.user_id(),
-                                       'Choice', bowl))
+            if user is None:
+                key = db.Key.from_path('Winners', 'singleton', 'Choice', bowl)
+            else:
+                key = db.Key.from_path('Player', user.user_id(), 'Choice', bowl)
+            db.delete(key)
         self.response.out.write('Saved')
 
-def completed_bowls():
+class PlayerSave(Save):
+    def post(self):
+        self.response.headers['Content-Type'] = 'text/plain'
+        user = users.get_current_user()
+        if not user:
+            self.response.out.write('Login required')
+            return
+        self.save(user)
+
+class AdminSave(Save):
+    def post(self):
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.save(None)
+
+def started_bowls():
     # TODO: Represent bowls using a dict/class instead of a tuple.
-    completed = set()
+    started = set()
     utc_now = datetime.datetime.utcnow()
     for d, b, _, _, _, _, _ in BOWLS:
         # UTC is 5 hours ahead of EST
         utc_kickoff = (datetime.datetime.strptime(d, '%Y %b %d %I:%M %p')
                        + datetime.timedelta(hours=5))
         if utc_kickoff < utc_now:
-            completed.add(b)
-    return completed
+            started.add(b)
+    return started
 
 class Scoreboard(webapp2.RequestHandler):
     def get(self):
+        # Look up game results
+        parent = Winners.get_or_insert('singleton')
+        winners_query = Choice.all()
+        winners_query.ancestor(parent)
+        winners = dict((c.bowl, c.team) for c in winners_query.run())
+
+        # Look up next 10 players
         next_cursor = self.request.get('next')
         player_query = db.GqlQuery('SELECT * FROM Player '
                                    'ORDER BY user '
@@ -146,21 +224,23 @@ class Scoreboard(webapp2.RequestHandler):
         if next_cursor:
             player_query.with_cursor(next_cursor)
 
-        completed = completed_bowls()
+        started = started_bowls()
         players = []
         for player in player_query.run():
             choice_query = Choice.all()
             choice_query.ancestor(player)
             choices = dict((c.bowl, c.team) for c in choice_query.run()
-                           if c.bowl in completed)
+                           if c.bowl in started)
             players.append((player, choices))
         next_cursor = player_query.cursor()
         tmpl = jinja_environment.get_template('scoreboard.html')
         self.response.out.write(tmpl.render(
-                bowls=BOWLS, players=players, next=next_cursor))
+                bowls=BOWLS, players=players, next=next_cursor, winners=winners))
 
 app = webapp2.WSGIApplication([('/', MainPage),
-                               ('/player/choose', Choose),
-                               ('/player/save', Save),
+                               ('/admin/choose', AdminChoose),
+                               ('/admin/save', AdminSave),
+                               ('/player/choose', PlayerChoose),
+                               ('/player/save', PlayerSave),
                                ('/public/scoreboard', Scoreboard)],
                               debug=True)
