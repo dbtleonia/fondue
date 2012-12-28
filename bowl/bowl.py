@@ -93,6 +93,7 @@ class Winners(db.Model):
 class Player(db.Model):
     """Represents a user who is guessing bowl results."""
     user = db.UserProperty(required=True)
+    pct_correct = db.FloatProperty()
 
 class Choice(db.Model):
     """The team chosen to win a given bowl.
@@ -113,14 +114,14 @@ class MainPage(webapp2.RequestHandler):
         self.response.out.write(tmpl.render(is_admin=is_admin, logout=logout))
 
 class Choose(webapp2.RequestHandler):
-    def choose(self, parent, greeting, save_path):
+    def choose(self, parent, greeting, is_admin):
         choice_query = Choice.all()
         choice_query.ancestor(parent)
         choices = dict((c.bowl, c.team) for c in choice_query.run())
         tmpl = jinja_environment.get_template('choose.html')
         self.response.out.write(tmpl.render(
                 greeting=greeting, bowls=BOWLS, choices=choices,
-                save_path=save_path))
+                is_admin=is_admin))
 
 class PlayerChoose(Choose):
     def get(self):
@@ -131,14 +132,14 @@ class PlayerChoose(Choose):
         parent = Player.get_or_insert(user.user_id(), user=user)
         self.choose(parent=parent,
                     greeting='Welcome %s !' % user.nickname(),
-                    save_path='/player/save')
+                    is_admin=False)
 
 class AdminChoose(Choose):
     def get(self):
         parent = Winners.get_or_insert('singleton')
         self.choose(parent=parent,
                     greeting='ADMIN PAGE: Select winners',
-                    save_path='/admin/save')
+                    is_admin=True)
 
 class Save(webapp2.RequestHandler):
     def save(self, user):
@@ -195,6 +196,38 @@ class AdminSave(Save):
         self.response.headers['Content-Type'] = 'text/plain'
         self.save(None)
 
+def query_winners():
+    """Returns a dict mapping each bowl id to the winning team's id."""
+    parent = Winners.get_or_insert('singleton')
+    q = Choice.all()
+    q.ancestor(parent)
+    return dict((c.bowl, c.team) for c in q.run())
+
+class AdminUpdate(webapp2.RequestHandler):
+    def post(self):
+        self.response.headers['Content-Type'] = 'text/plain'
+        winners = query_winners()
+
+        # Update all the players
+        player_query = db.GqlQuery('SELECT * FROM Player')
+        players = []
+        for player in player_query.run():
+            total = 0
+            correct = 0
+            choice_query = Choice.all()
+            choice_query.ancestor(player)
+            for c in choice_query.run():
+                if c.bowl in winners:
+                    total += 1
+                    if  winners[c.bowl] == c.team:
+                        correct += 1
+            if total == 0:
+                player.pct_correct = 0.0
+            else:
+                player.pct_correct = float(correct) / total
+            player.put()
+        self.response.out.write('OK')
+
 def started_bowls():
     # TODO: Represent bowls using a dict/class instead of a tuple.
     started = set()
@@ -209,20 +242,11 @@ def started_bowls():
 
 class Scoreboard(webapp2.RequestHandler):
     def get(self):
-        # Look up game results
-        parent = Winners.get_or_insert('singleton')
-        winners_query = Choice.all()
-        winners_query.ancestor(parent)
-        winners = dict((c.bowl, c.team) for c in winners_query.run())
+        winners = query_winners()
 
-        # Look up next 10 players
-        next_cursor = self.request.get('next')
+        # Look up all the players
         player_query = db.GqlQuery('SELECT * FROM Player '
-                                   'ORDER BY user '
-                                   'LIMIT 10')
-        # TODO: Catch bad cursor here?
-        if next_cursor:
-            player_query.with_cursor(next_cursor)
+                                   'ORDER BY pct_correct DESC')
 
         started = started_bowls()
         players = []
@@ -232,14 +256,14 @@ class Scoreboard(webapp2.RequestHandler):
             choices = dict((c.bowl, c.team) for c in choice_query.run()
                            if c.bowl in started)
             players.append((player, choices))
-        next_cursor = player_query.cursor()
         tmpl = jinja_environment.get_template('scoreboard.html')
         self.response.out.write(tmpl.render(
-                bowls=BOWLS, players=players, next=next_cursor, winners=winners))
+                bowls=BOWLS, players=players, winners=winners))
 
 app = webapp2.WSGIApplication([('/', MainPage),
                                ('/admin/choose', AdminChoose),
                                ('/admin/save', AdminSave),
+                               ('/admin/update', AdminUpdate),
                                ('/player/choose', PlayerChoose),
                                ('/player/save', PlayerSave),
                                ('/public/scoreboard', Scoreboard)],

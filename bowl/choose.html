@@ -3,7 +3,7 @@ Variables set for this template:
   greeting:  Text to display as startup status
   bowls:     List of bowls; see bowl.py for format
   choices:   Dict of bowl_id -> team_id
-  save_path: /player/save or /admin/save
+  is_admin:  True if user is logged in and is an admin
 -->
 <html>
   <head>
@@ -19,18 +19,23 @@ Variables set for this template:
         <td>{{ bowl[4] }}</td>
         <td id="{{ bowl[2] }}"
             class="{{ 'selected' if choices.get(bowl[1]) == bowl[2] }}"
-            onclick="clickTeam(this, '{{ save_path }}')"
+            onclick="clickTeam(this, '{{ '/admin/save' if is_admin else '/player/save' }}')"
             onmouseover="this.style.cursor='pointer'">
           {{ bowl[5] }}
         </td>
         <td id="{{ bowl[3] }}"
             class="{{ 'selected' if choices.get(bowl[1]) == bowl[3] }}"
-            onclick="clickTeam(this, '{{ save_path }}')"
+            onclick="clickTeam(this, '{{ '/admin/save' if is_admin else '/player/save' }}')"
             onmouseover="this.style.cursor='pointer'">
          {{ bowl[6] }}
         </td>
       </tr>
       {% endfor %}
     </table>
+    {% if is_admin %}
+    <form action="/admin/update" method="post">
+      <input type="submit" value="Update">
+    </form>
+    {% endif %}
   </body>
 </html>
