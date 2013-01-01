@@ -62,7 +62,7 @@ BOWLS = [
     ('2012 Dec 27  9:45 pm', 'HO', 'BAY',  'UCLA', 'Holiday', 'Baylor', 'UCLA'),
     ('2012 Dec 28  2:00 pm', 'IN', 'OHIO', 'ULM',  'Independence', 'Ohio', 'LA-Monroe'),
     ('2012 Dec 28  5:30 pm', 'RA', 'RUTG', 'VT',   'Russell Athletic', 'Rutgers', 'Virginia Tech'),
-    ('2012 Dec 28  9:00 pm', 'ME', 'MINN', 'TTU',  'Meneike Car Care', 'Minnesota', 'Texas Tech'),
+    ('2012 Dec 28  9:00 pm', 'ME', 'MINN', 'TTU',  'Meineke Car Care', 'Minnesota', 'Texas Tech'),
     ('2012 Dec 29 11:45 am', 'AF', 'RICE', 'AFA',  'Armed Forces', 'Rice', 'Air Force'),
     ('2012 Dec 29  3:15 pm', 'PS', 'WVU',  'SYR',  'Pinstripe', 'West Virginia', 'Syracuse'),
     ('2012 Dec 29  4:00 pm', 'FH', 'NAVY', 'ASU',  'Fight Hunger', 'Navy', 'Arizona St'),
