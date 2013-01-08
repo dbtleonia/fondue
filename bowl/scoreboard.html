@@ -21,7 +21,7 @@ Variables set for this template:
       {% for p in players %}
       <tr>
 	<th>{{ p[0].user.nickname() }}</th>
-	<td>{{ '%5.3f' % p[0].pct_correct }}</td>
+	<td>{{ '%5.3f' % (p[0].pct_correct or 0.0) }}</td>
 	{% for bowl in bowls %}
         <td class="{{ ('right' if p[1][bowl[1]] == winners[bowl[1]] else 'wrong') if bowl[1] in p[1] and bowl[1] in winners }}">{{ p[1].get(bowl[1], '') }}</td>
 	{% endfor %}
