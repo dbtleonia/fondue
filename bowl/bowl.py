@@ -88,6 +88,7 @@ BOWLS = [
 
 class Winners(db.Model):
     """Parent entity for Choice entities representing bowl outcomes.
+
     NB: We only create one such entity, and its key name is 'singleton'"""
 
 class Player(db.Model):
@@ -97,6 +98,7 @@ class Player(db.Model):
 
 class Choice(db.Model):
     """The team chosen to win a given bowl.
+
     Each Choice has a Player parent, or has the Winners singleton as parent."""
     bowl = db.StringProperty(required=True)
     team = db.StringProperty(required=True)
@@ -143,6 +145,7 @@ class AdminChoose(Choose):
 
 class Save(webapp2.RequestHandler):
     def save(self, user):
+        """Saves user's choice to datastore; user=None means admin mode."""
         bowl = self.request.get('bowl')
         team = self.request.get('team')
 
@@ -154,6 +157,7 @@ class Save(webapp2.RequestHandler):
                         'Invalid team for bowl %s: %s' %
                         (cgi.escape(bowl), cgi.escape(team)))
                     return
+                # Only check time in non-admin case.
                 if user is not None:
                     # UTC is 5 hours ahead of EST
                     utc_kickoff = (
@@ -167,7 +171,7 @@ class Save(webapp2.RequestHandler):
             self.response.out.write('Invalid bowl: %s' % cgi.escape(bowl))
             return
 
-        # Store or delete a choice
+        # Store or delete a choice (remember: user is None => admin).
         if team:
             if user is None:
                 parent = Winners.get_or_insert('singleton')
